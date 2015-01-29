@@ -1,29 +1,31 @@
+require 'csv'
 
 class MovieData
 	
 	def initialize(dir, indicator)
 		@dir = dir
 		@indicator = indicator
-		@bf_lines = []
+		@um_hsh = {} # user_movie hash: Key - user, Value - movie
+		@mu_hsh = {} # movie_user hash: Key - movie, Value - user
 		base_file = File.dirname(__FILE__) + "/#{@dir}/#{@indicator}.base"
-		
-		bf = open(base_file)
-		bf_content = bf.read.split("\n")
-		bf_content.each do |line|
-			@bf_lines.push(line.split("\t"))
-		end
-		puts "Base file loaded."
 
-		@user_movies = {}
-		@bf_lines.each do |line|
-			if @user_movies.has_key?(line[0])
-				@user_movies[line[0]][line[1]] = [line[2], line[3]]
+		load_file(base_file)
+		
+	end
+
+	def load_file(file_path)
+		CSV.foreach(file_path, {:col_sep => "\t"}) do |line|
+			if @um_hsh.has_key?(line[0])
+				@um_hsh[line[0]][line[1]] = [line[2], line[3]]
 			else
-				@user_movies[line[0]] = {line[1] => [line[2], line[3]]}
+				@um_hsh[line[0]] = {line[1] => [line[2], line[3]]}
+			end
+			if @mu_hsh.has_key?(line[1])
+				@mu_hsh[line[1]][line[0]] = [line[2], line[3]]
+			else
+				@mu_hsh[line[1]] = {line[0] => [line[2], line[3]]}
 			end
 		end
-
-		bf.close
 	end
 
 	# Return a number that indicates the popularity (higher numbers are more popular). 
@@ -33,13 +35,11 @@ class MovieData
 	  total_rate = 0
 	  times = []
 
-	  @user_movies.each do |u, mhash|
-	  	if mhash.has_key?(movie_id)
-	  		total_rate += mhash[movie_id][0].to_i
-	  		times.push(mhash[movie_id][1].to_i)	
-	  	end
+	  @mu_hsh[movie_id].each do |u, v|
+	  	total_rate += v[0].to_i
+	  	times.push(v[1].to_i)
 	  end
-	  
+
 	  times.sort!
 	  days_between = (times.last - times.first) / (3600 * 24)
 	  
@@ -53,29 +53,30 @@ class MovieData
 	# Generate a list of all movie_id’s ordered by decreasing popularity
 	def popularity_list
 	  pop_file_path = File.dirname(__FILE__) + "/popularity_list"
-	  pop_hash = Hash.new
+	  pop_hsh = Hash.new
 	  
-	  @bf_lines.each do |line|
-	  	if !pop_hash.has_key?(line[1])
-	  		pop_hash[line[1]] = popularity(line[1])
-	  	end
+	  f = open(pop_file_path, "w")
+
+	  @mu_hsh.keys.each do |m|
+	  	pop_hsh[m] = popularity(m)
 	  end
-	  
-	  pop_hash.sort_by! {|k, v| v}.reverse
-	  
-	  f = open(pop_file_path, "w")	  
-	  pop_hash.each do |k, v|
+
+	  pop_hsh_dec = pop_hsh.sort_by{|k, v| v}.reverse
+	  pop_hsh_dec.each do |k, v|
 	    f.write("#{k}\t#{v}\n")
 	  end
+
 	  f.close
 	  puts "Popularity list stored in file #{File.dirname(__FILE__)}/popularity_list"
-	  return pop_hash
+	  return pop_hsh_dec
 	end
 
 	# calculate similarity of 2 hashes
 	def hash_sim(hsh1, hsh2)
 		modified_hsh1 = hsh1.select{|k,v| hsh2.has_key?(k)}
 		modified_hsh2 = hsh2.select{|k,v| hsh1.has_key?(k)}
+		print "hsh1: ", modified_hsh1, "\n"
+		print "hsh2: ", modified_hsh2, "\n"
 		if modified_hsh1.size < 3
 			return 0
 		else
@@ -98,40 +99,29 @@ class MovieData
 	  # user_hah: key: movie_ID. value: rating
 	  user1_hsh = Hash.new
 	  user2_hsh = Hash.new
-	  
-	  @bf_lines.each do |line|
-	  	if line[0] == user1
-	      user1_hsh[line[1]] = line[2].to_i
-	    elsif line[0] == user2
-	      user2_hsh[line[1]] = line[2].to_i
-	   	end
-	  end
-	  
-	  return hash_sim(user1_hsh, user2_hsh)
-	end
 
-	def get_users
-		user_list = []
-		@bf_lines.each do |line|
-	  	if !user_list.include?(line[0])
-	      user_list.push(line[0])
-	   	end
+	  @um_hsh[user1].each do |k, v|
+	  	user1_hsh[k] = v[0].to_i
 	  end
-	  return user_list
+	  @um_hsh[user2].each do |k, v|
+	  	user2_hsh[k] = v[0].to_i
+	  end
+
+	  return hash_sim(user1_hsh, user2_hsh)
 	end
 
 	# Return a list of users whose tastes are most similar to the tastes of user u
 	# The result will be saved to file "./similarity_list"
 	def most_similar(u, save)
 
-	  user_list = get_users
+	  user_list = @um_hsh.keys
 	  user_list.delete(u)
-	  
 	  sim_hash = Hash.new
+	  
 	  user_list.each do |user|
 	    sim_hash[user] = similarity(u, user)
 	  end
-	  sim_hash.sort_by! {|k, v| v}.reverse
+	  sim_hash_dec = sim_hash.sort_by {|k, v| v}.reverse
 
 	  if save == "save"
 		sim_file_path = File.dirname(__FILE__) + "/similarity_list"
@@ -139,7 +129,7 @@ class MovieData
 		f.write("Users similar to user##{u} are:\n")
 		f.write("User#\tSimilarity(out of 100%)\n")
 		 
-		sim_hash.each do |k, v|
+		sim_hash_dec.each do |k, v|
 			f.write("\t#{k}\t\t#{v}%\n")
 		end
 
@@ -147,18 +137,16 @@ class MovieData
 		f.close
 	  end
 	  
-	  return sim_hash
+	  return sim_hash_dec
 	end
 
 	# return the rating of a user on a certain movie
 	def rating(u ,m)
-		rate = 0
-		@bf_lines.each do |line|
-			if line[0] == u && line[1] == m
-				rate = line[2]
-			end
+		if @um_hsh[u].has_key?(m)
+			return @um_hsh[u][m][0]	
+		else
+			return nil
 		end
-		return rate
 	end
 
 	# Filter users 98% or more similar to u
@@ -184,41 +172,27 @@ class MovieData
 		ratings = []
 		sim_users.each do |user|
 			rate = rating(user, m)
-			ratings.push(rate.to_i)
-		end
-		
-		sum = 0
-		count = 0
-		ratings.each do |i|
-			if i != 0
-				sum += i
-				count += 1
+			if rate != nil
+				ratings.push(rate.to_i)
 			end
 		end
-		prediction = sum/count.to_f
-		return prediction.round(1)
+		
+		prediction = array_mean(ratings)
+		return prediction.round(2)
+	end
+
+	def array_mean(arr)
+		return arr.inject{ |sum, el| sum + el }.to_f / arr.size
 	end
 
 	# returns the array of movies that user u has watched
 	def movies(u)
-		watched_array = []
-		@bf_lines.each do |line|
-			if line[0] == u && !watched_array.include?(line[1])
-				watched_array.push(line[1].to_i)
-			end
-		end
-		return watched_array.sort!
+		return @um_hsh[u].keys
 	end
 
 	# returns the array of users that have seen movie m
 	def viewers(m)
-		viewed_array = []
-		@bf_lines.each do |line|
-			if line[1] == m && !viewed_array.include?(line[0])
-				viewed_array.push(line[0].to_i)
-			end
-		end
-		return viewed_array.sort!
+		return @mu_hsh[m].keys
 	end
 
 	# run the test
@@ -283,7 +257,7 @@ class MovieTest
 				f.write("#{line[0]}\t#{line[1]}\t#{line[2]}\t#{prediction}\n")
 				f.close
 			end
-			puts "Test termintated at #{time_end = Time.now}. Took #{((time_end - time_start).to_f/3600).round(2)} hours."
+			puts "Test termintated at #{time_end = Time.now}. Took #{((time_end - time_start).to_f/60).round(2)} minutes."
 			puts "Result stored in #{__FILE__}/result"
 		end
 	end
