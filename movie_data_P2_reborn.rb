@@ -32,7 +32,8 @@ class MovieData
 	  end
 	end
 
-	# Generate a list of all movie_id’s ordered by decreasing popularity
+	# Return a list of all movie_id’s ordered by decreasing popularity
+	# Result stored in "./popularity_list"
 	def popularity_list
 	  pop_file_path = File.dirname(__FILE__) + "/popularity_list"
 	  pop_hsh = Hash.new
@@ -53,7 +54,9 @@ class MovieData
 	  return pop_hsh_dec
 	end
 
-	# calculate similarity of 2 hashed using cosine similarity
+	# Return similarity of 2 hashes using cosine similarity
+	# cosine similarity of vector A, B = (A·B)/(|A||B|)
+	# Here, 2 vectors must have at least 3 elements
 	def hash_sim(hsh1, hsh2)
 		common_keys = hsh1.keys & hsh2.keys
 
@@ -72,11 +75,11 @@ class MovieData
 		end
 	end
 
-	# Generate a number which indicates the similarity in movie preference between user1 and user2 (where higher numbers indicate greater similarity)
+	# Generate a number which indicates the similarity in movie preference between user1 and user2 (where larger numbers indicate greater similarity)
+	# Using cosine similarity
 	# Problem: What if u1 & u2 only have 1 film in common?
 	# Solution: Only compare two users with more than 3 movies in common. If less than 3, similarity is 0.
 	def similarity(user1, user2)
-	  # user_hah: key: movie_ID. value: rating
 	  user1_hsh = Hash.new
 	  user2_hsh = Hash.new
 
@@ -91,8 +94,9 @@ class MovieData
 	end
 
 	# Return a list of users whose tastes are most similar to the tastes of user u
-	# The result will be saved to file "./similarity_list"
-	def most_similar(u, save)
+	# u is not in this list
+	# The result will be saved to file "./similarity_list" if save argument is set
+	def most_similar(u, save = nil)
 
 	  user_list = @base_um_hsh.keys
 	  user_list.delete(u)
@@ -106,8 +110,6 @@ class MovieData
 	  if save == "save"
 		sim_file_path = File.dirname(__FILE__) + "/similarity_list"
 		f = open(sim_file_path, "w")
-		f.write("Users similar to user##{u} are:\n")
-		f.write("User#\tSimilarity(out of 100%)\n")
 		 
 		sim_hash_dec.each do |k, v|
 			f.write("\t#{k}\t\t#{v}%\n")
@@ -129,11 +131,11 @@ class MovieData
 		end
 	end
 
-	# Filter users 98% or more similar to u
+	# Filter users 98% or more similar to u and return them in an array
 	# Lower the shreshould, longer it takes to calculate.
 	def top_sim_user(u)
 		sim_users = []
-		sim_hash_descend = most_similar(u, "no")
+		sim_hash_descend = most_similar(u)
 		sim_hash_descend.each do |k, v|
 			if v.to_f > 98
 				sim_users.push(k)
@@ -145,9 +147,9 @@ class MovieData
 	end
 
 	# returns a floating point number between 1.0 and 5.0 as an estimate of what user u would rate movie m.
-	# Find users similar to u, calculate their rating on m if they watched it.
-	# Some movies may not be able to give prediction.
-	# Higher the threshould, fater the calculation.
+	# Based on sim_users, calculate their rating on m if they watched it.
+	# Prediction of u on m is the mean of ratings of the similar users have on m.
+	# Some movies may not be able to give prediction because users may not have seen m.
 	def predict(u, m, sim_users)
 		ratings = []
 		sim_users.each do |user|
@@ -177,6 +179,7 @@ class MovieData
 	end
 
 	# run the test
+	# rows specifies how many rows in the test file to run
 	def run_test(rows = nil)
 
 		mt = MovieTest.new(@dir, @indicator, rows)
@@ -192,18 +195,19 @@ class MovieTest
 	
 	def initialize(dir, indicator, rows = nil)
 		@tf_lines = []
+		@errors = []
+		@result = []
 		@error_mean = 0
-		@errors = 0
 		test_file = File.dirname(__FILE__) + "/#{dir}/#{indicator}.test"
 		@test_um_hsh = Aux.load_file(test_file, "um", rows)
 		@md_test = MovieData.new(dir, indicator)
-		@result = []
 		puts "Base file for testing loaded."
 	end
 
 	# Predicting the rating of a user in test set based on the base set.
 	# For each iterate, will have to go over the whole base file at least once.
-	# Result stored into file ~/result
+	# Return result array in form of [user, movie, rating, prediction]
+	# Result stored into file ./result
 	def test
 		sim_users = []
 		time_start = 0
@@ -219,25 +223,11 @@ class MovieTest
 		end
 		puts "\nTest termintated at #{time_end = Time.now}."
 		puts "Took #{((time_end - time_start).to_f/60).round(2)} minutes."
+		return @result
 	end
 
-	# load_result loads the test result file generated from test.
-	# This could be implemented in to_a but since to_a is part of the test and might not run,
-	# while other tests depends on the test result. Thus the loading was implemented separatedly.
-	def self.load_result
-		test_result = []
-		f = open(File.dirname(__FILE__) + "/result", "r")
-		file_content = f.read.split("\n")
-		file_content.each do |line|
-			test_result.push(line.split("\t"))
-		end
-		puts "Result file loaded."
-		return test_result
-	end
-
-	# returns the average predication error (which should be close to zero)
+	# returns the average predication error
 	def mean
-		@errors = []
 		@result.each do |r|
 			@errors.push((r[2].to_f - r[3].to_f).abs)
 		end

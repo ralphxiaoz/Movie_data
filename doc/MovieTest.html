@@ -73,8 +73,6 @@
 
   <ul class="link-list" role="directory">
     
-    <li ><a href="#method-c-load_result">::load_result</a>
-    
     <li ><a href="#method-c-new">::new</a>
     
     <li ><a href="#method-i-mean">#mean</a>
@@ -121,51 +119,6 @@
        </header>
 
     
-      <div id="method-c-load_result" class="method-detail ">
-        
-        <div class="method-heading">
-          <span class="method-name">load_result</span><span
-            class="method-args">()</span>
-          
-          <span class="method-click-advice">click to toggle source</span>
-          
-        </div>
-        
-
-        <div class="method-description">
-          
-          <p><a href="MovieTest.html#method-c-load_result">::load_result</a> loads the
-test result file generated from test. This could be implemented in <a
-href="MovieTest.html#method-i-to_a">#to_a</a> but since <a
-href="MovieTest.html#method-i-to_a">#to_a</a> is part of the test and might
-not run, while other tests depends on the test result. Thus the loading was
-implemented separatedly.</p>
-          
-          
-
-          
-          <div class="method-source-code" id="load_result-source">
-            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 227</span>
-<span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">load_result</span>
-        <span class="ruby-identifier">test_result</span> = []
-        <span class="ruby-identifier">f</span> = <span class="ruby-identifier">open</span>(<span class="ruby-constant">File</span>.<span class="ruby-identifier">dirname</span>(<span class="ruby-keyword">__FILE__</span>) <span class="ruby-operator">+</span> <span class="ruby-string">&quot;/result&quot;</span>, <span class="ruby-string">&quot;r&quot;</span>)
-        <span class="ruby-identifier">file_content</span> = <span class="ruby-identifier">f</span>.<span class="ruby-identifier">read</span>.<span class="ruby-identifier">split</span>(<span class="ruby-string">&quot;\n&quot;</span>)
-        <span class="ruby-identifier">file_content</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">line</span><span class="ruby-operator">|</span>
-                <span class="ruby-identifier">test_result</span>.<span class="ruby-identifier">push</span>(<span class="ruby-identifier">line</span>.<span class="ruby-identifier">split</span>(<span class="ruby-string">&quot;\t&quot;</span>))
-        <span class="ruby-keyword">end</span>
-        <span class="ruby-identifier">puts</span> <span class="ruby-string">&quot;Result file loaded.&quot;</span>
-        <span class="ruby-keyword">return</span> <span class="ruby-identifier">test_result</span>
-<span class="ruby-keyword">end</span></pre>
-          </div>
-          
-        </div>
-
-        
-
-        
-      </div>
-
-    
       <div id="method-c-new" class="method-detail ">
         
         <div class="method-heading">
@@ -185,15 +138,15 @@ implemented separatedly.</p>
 
           
           <div class="method-source-code" id="new-source">
-            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 193</span>
+            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 196</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">dir</span>, <span class="ruby-identifier">indicator</span>, <span class="ruby-identifier">rows</span> = <span class="ruby-keyword">nil</span>)
         <span class="ruby-ivar">@tf_lines</span> = []
+        <span class="ruby-ivar">@errors</span> = []
+        <span class="ruby-ivar">@result</span> = []
         <span class="ruby-ivar">@error_mean</span> = <span class="ruby-value">0</span>
-        <span class="ruby-ivar">@errors</span> = <span class="ruby-value">0</span>
         <span class="ruby-identifier">test_file</span> = <span class="ruby-constant">File</span>.<span class="ruby-identifier">dirname</span>(<span class="ruby-keyword">__FILE__</span>) <span class="ruby-operator">+</span> <span class="ruby-node">&quot;/#{dir}/#{indicator}.test&quot;</span>
         <span class="ruby-ivar">@test_um_hsh</span> = <span class="ruby-constant">Aux</span>.<span class="ruby-identifier">load_file</span>(<span class="ruby-identifier">test_file</span>, <span class="ruby-string">&quot;um&quot;</span>, <span class="ruby-identifier">rows</span>)
         <span class="ruby-ivar">@md_test</span> = <span class="ruby-constant">MovieData</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">dir</span>, <span class="ruby-identifier">indicator</span>)
-        <span class="ruby-ivar">@result</span> = []
         <span class="ruby-identifier">puts</span> <span class="ruby-string">&quot;Base file for testing loaded.&quot;</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
@@ -227,15 +180,14 @@ implemented separatedly.</p>
 
         <div class="method-description">
           
-          <p>returns the average predication error (which should be close to zero)</p>
+          <p>returns the average predication error</p>
           
           
 
           
           <div class="method-source-code" id="mean-source">
-            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 239</span>
+            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 230</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">mean</span>
-        <span class="ruby-ivar">@errors</span> = []
         <span class="ruby-ivar">@result</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">r</span><span class="ruby-operator">|</span>
                 <span class="ruby-ivar">@errors</span>.<span class="ruby-identifier">push</span>((<span class="ruby-identifier">r</span>[<span class="ruby-value">2</span>].<span class="ruby-identifier">to_f</span> <span class="ruby-operator">-</span> <span class="ruby-identifier">r</span>[<span class="ruby-value">3</span>].<span class="ruby-identifier">to_f</span>).<span class="ruby-identifier">abs</span>)
         <span class="ruby-keyword">end</span>
@@ -271,7 +223,7 @@ implemented separatedly.</p>
 
           
           <div class="method-source-code" id="rms-source">
-            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 258</span>
+            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 248</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">rms</span>
         <span class="ruby-identifier">error_power</span> = []
         <span class="ruby-ivar">@errors</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">err</span><span class="ruby-operator">|</span>
@@ -308,7 +260,7 @@ implemented separatedly.</p>
 
           
           <div class="method-source-code" id="stddev-source">
-            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 249</span>
+            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 239</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">stddev</span>
         <span class="ruby-identifier">dev</span> = []
         <span class="ruby-ivar">@result</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">r</span><span class="ruby-operator">|</span>
@@ -340,14 +292,15 @@ implemented separatedly.</p>
         <div class="method-description">
           
           <p>Predicting the rating of a user in test set based on the base set. For each
-iterate, will have to go over the whole base file at least once. Result
-stored into file ~/result</p>
+iterate, will have to go over the whole base file at least once. Return
+result array in form of [user, movie, rating, prediction] Result stored
+into file ./result</p>
           
           
 
           
           <div class="method-source-code" id="test-source">
-            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 207</span>
+            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 211</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">test</span>
         <span class="ruby-identifier">sim_users</span> = []
         <span class="ruby-identifier">time_start</span> = <span class="ruby-value">0</span>
@@ -363,6 +316,7 @@ stored into file ~/result</p>
         <span class="ruby-keyword">end</span>
         <span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;\nTest termintated at #{time_end = Time.now}.&quot;</span>
         <span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;Took #{((time_end - time_start).to_f/60).round(2)} minutes.&quot;</span>
+        <span class="ruby-keyword">return</span> <span class="ruby-ivar">@result</span>
 <span class="ruby-keyword">end</span></pre>
           </div>
           
@@ -393,7 +347,7 @@ stored into file ~/result</p>
 
           
           <div class="method-source-code" id="to_a-source">
-            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 267</span>
+            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 257</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">to_a</span>
         <span class="ruby-keyword">return</span> <span class="ruby-ivar">@result</span>
 <span class="ruby-keyword">end</span></pre>

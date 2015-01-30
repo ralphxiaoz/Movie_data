@@ -117,13 +117,13 @@
 
         <div class="method-description">
           
-          
+          <p>return the mean of an array</p>
           
           
 
           
           <div class="method-source-code" id="array_mean-source">
-            <pre><span class="ruby-comment"># File Aux.rb, line 34</span>
+            <pre><span class="ruby-comment"># File Aux.rb, line 39</span>
 <span class="ruby-keyword">def</span> <span class="ruby-constant">Aux</span>.<span class="ruby-identifier">array_mean</span>(<span class="ruby-identifier">arr</span>)
         <span class="ruby-keyword">return</span> (<span class="ruby-identifier">arr</span>.<span class="ruby-identifier">inject</span>{ <span class="ruby-operator">|</span><span class="ruby-identifier">sum</span>, <span class="ruby-identifier">el</span><span class="ruby-operator">|</span> <span class="ruby-identifier">sum</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">el</span> }.<span class="ruby-identifier">to_f</span> <span class="ruby-operator">/</span> <span class="ruby-identifier">arr</span>.<span class="ruby-identifier">size</span>).<span class="ruby-identifier">round</span>(<span class="ruby-value">2</span>)
 <span class="ruby-keyword">end</span></pre>
@@ -150,13 +150,16 @@
 
         <div class="method-description">
           
-          
+          <p>load the file, format depending on relation um(user-movie) relation: load
+the file into um_hsh – {user =&gt; {movie =&gt; [rating, time]}} 
+mu(movie-user) relation: load the file into mu_hsh – {movie =&gt; {user
+=&gt; [rating, time]}}  is there any better way to generate such a hash?</p>
           
           
 
           
           <div class="method-source-code" id="load_file-source">
-            <pre><span class="ruby-comment"># File Aux.rb, line 4</span>
+            <pre><span class="ruby-comment"># File Aux.rb, line 8</span>
 <span class="ruby-keyword">def</span> <span class="ruby-constant">Aux</span>.<span class="ruby-identifier">load_file</span>(<span class="ruby-identifier">file_path</span>, <span class="ruby-identifier">relation</span>, <span class="ruby-identifier">rows</span> = <span class="ruby-keyword">nil</span>)
         <span class="ruby-identifier">um_hsh</span> = {}
         <span class="ruby-identifier">mu_hsh</span> = {}

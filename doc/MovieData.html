@@ -189,13 +189,14 @@
 
         <div class="method-description">
           
-          <p>calculate similarity of 2 hashed using cosine similarity</p>
+          <p>Return similarity of 2 hashes using cosine similarity cosine similarity of
+vector A, B = (A·B)/(|A||B|) Here, 2 vectors must have at least 3 elements</p>
           
           
 
           
           <div class="method-source-code" id="hash_sim-source">
-            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 57</span>
+            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 60</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">hash_sim</span>(<span class="ruby-identifier">hsh1</span>, <span class="ruby-identifier">hsh2</span>)
         <span class="ruby-identifier">common_keys</span> = <span class="ruby-identifier">hsh1</span>.<span class="ruby-identifier">keys</span> <span class="ruby-operator">&amp;</span> <span class="ruby-identifier">hsh2</span>.<span class="ruby-identifier">keys</span>
 
@@ -227,7 +228,7 @@
         
         <div class="method-heading">
           <span class="method-name">most_similar</span><span
-            class="method-args">(u, save)</span>
+            class="method-args">(u, save = nil)</span>
           
           <span class="method-click-advice">click to toggle source</span>
           
@@ -237,14 +238,15 @@
         <div class="method-description">
           
           <p>Return a list of users whose tastes are most similar to the tastes of user
-u The result will be saved to file “./similarity_list”</p>
+u u is not in this list The result will be saved to file
+“./similarity_list” if save argument is set</p>
           
           
 
           
           <div class="method-source-code" id="most_similar-source">
-            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 95</span>
-<span class="ruby-keyword">def</span> <span class="ruby-identifier">most_similar</span>(<span class="ruby-identifier">u</span>, <span class="ruby-identifier">save</span>)
+            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 99</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">most_similar</span>(<span class="ruby-identifier">u</span>, <span class="ruby-identifier">save</span> = <span class="ruby-keyword">nil</span>)
 
   <span class="ruby-identifier">user_list</span> = <span class="ruby-ivar">@base_um_hsh</span>.<span class="ruby-identifier">keys</span>
   <span class="ruby-identifier">user_list</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-identifier">u</span>)
@@ -258,8 +260,6 @@ u The result will be saved to file “./similarity_list”</p>
   <span class="ruby-keyword">if</span> <span class="ruby-identifier">save</span> <span class="ruby-operator">==</span> <span class="ruby-string">&quot;save&quot;</span>
         <span class="ruby-identifier">sim_file_path</span> = <span class="ruby-constant">File</span>.<span class="ruby-identifier">dirname</span>(<span class="ruby-keyword">__FILE__</span>) <span class="ruby-operator">+</span> <span class="ruby-string">&quot;/similarity_list&quot;</span>
         <span class="ruby-identifier">f</span> = <span class="ruby-identifier">open</span>(<span class="ruby-identifier">sim_file_path</span>, <span class="ruby-string">&quot;w&quot;</span>)
-        <span class="ruby-identifier">f</span>.<span class="ruby-identifier">write</span>(<span class="ruby-node">&quot;Users similar to user##{u} are:\n&quot;</span>)
-        <span class="ruby-identifier">f</span>.<span class="ruby-identifier">write</span>(<span class="ruby-node">&quot;User#\tSimilarity(out of 100%)\n&quot;</span>)
          
         <span class="ruby-identifier">sim_hash_dec</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">k</span>, <span class="ruby-identifier">v</span><span class="ruby-operator">|</span>
                 <span class="ruby-identifier">f</span>.<span class="ruby-identifier">write</span>(<span class="ruby-node">&quot;\t#{k}\t\t#{v}%\n&quot;</span>)
@@ -300,7 +300,7 @@ u The result will be saved to file “./similarity_list”</p>
 
           
           <div class="method-source-code" id="movies-source">
-            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 170</span>
+            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 172</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">movies</span>(<span class="ruby-identifier">u</span>)
         <span class="ruby-keyword">return</span> <span class="ruby-ivar">@base_um_hsh</span>[<span class="ruby-identifier">u</span>].<span class="ruby-identifier">keys</span>
 <span class="ruby-keyword">end</span></pre>
@@ -377,13 +377,14 @@ vote If a movie has only one rating, its popularity is 0</p>
 
         <div class="method-description">
           
-          <p>Generate a list of all movie_id’s ordered by decreasing popularity</p>
+          <p>Return a list of all movie_id’s ordered by decreasing popularity Result
+stored in “./popularity_list”</p>
           
           
 
           
           <div class="method-source-code" id="popularity_list-source">
-            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 36</span>
+            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 37</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">popularity_list</span>
   <span class="ruby-identifier">pop_file_path</span> = <span class="ruby-constant">File</span>.<span class="ruby-identifier">dirname</span>(<span class="ruby-keyword">__FILE__</span>) <span class="ruby-operator">+</span> <span class="ruby-string">&quot;/popularity_list&quot;</span>
   <span class="ruby-identifier">pop_hsh</span> = <span class="ruby-constant">Hash</span>.<span class="ruby-identifier">new</span>
@@ -427,15 +428,16 @@ vote If a movie has only one rating, its popularity is 0</p>
         <div class="method-description">
           
           <p>returns a floating point number between 1.0 and 5.0 as an estimate of what
-user u would rate movie m. Find users similar to u, calculate their rating
-on m if they watched it. Some movies may not be able to give prediction.
-Higher the threshould, fater the calculation.</p>
+user u would rate movie m. Based on sim_users, calculate their rating on m
+if they watched it. Prediction of u on m is the mean of ratings of the
+similar users have on m. Some movies may not be able to give prediction
+because users may not have seen m.</p>
           
           
 
           
           <div class="method-source-code" id="predict-source">
-            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 151</span>
+            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 153</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">predict</span>(<span class="ruby-identifier">u</span>, <span class="ruby-identifier">m</span>, <span class="ruby-identifier">sim_users</span>)
         <span class="ruby-identifier">ratings</span> = []
         <span class="ruby-identifier">sim_users</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">user</span><span class="ruby-operator">|</span>
@@ -482,7 +484,7 @@ Higher the threshould, fater the calculation.</p>
 
           
           <div class="method-source-code" id="rating-source">
-            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 124</span>
+            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 126</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">rating</span>(<span class="ruby-identifier">u</span> ,<span class="ruby-identifier">m</span>)
         <span class="ruby-keyword">if</span> <span class="ruby-ivar">@base_um_hsh</span>[<span class="ruby-identifier">u</span>].<span class="ruby-identifier">has_key?</span>(<span class="ruby-identifier">m</span>)
                 <span class="ruby-keyword">return</span> <span class="ruby-ivar">@base_um_hsh</span>[<span class="ruby-identifier">u</span>][<span class="ruby-identifier">m</span>][<span class="ruby-value">0</span>] 
@@ -513,13 +515,13 @@ Higher the threshould, fater the calculation.</p>
 
         <div class="method-description">
           
-          <p>run the test</p>
+          <p>run the test rows specifies how many rows in the test file to run</p>
           
           
 
           
           <div class="method-source-code" id="run_test-source">
-            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 180</span>
+            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 183</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">run_test</span>(<span class="ruby-identifier">rows</span> = <span class="ruby-keyword">nil</span>)
 
         <span class="ruby-identifier">mt</span> = <span class="ruby-constant">MovieTest</span>.<span class="ruby-identifier">new</span>(<span class="ruby-ivar">@dir</span>, <span class="ruby-ivar">@indicator</span>, <span class="ruby-identifier">rows</span>)
@@ -553,18 +555,17 @@ Higher the threshould, fater the calculation.</p>
         <div class="method-description">
           
           <p>Generate a number which indicates the similarity in movie preference
-between user1 and user2 (where higher numbers indicate greater similarity)
-Problem: What if u1 &amp; u2 only have 1 film in common? Solution: Only
-compare two users with more than 3 movies in common. If less than 3,
-similarity is 0.</p>
+between user1 and user2 (where larger numbers indicate greater similarity)
+Using cosine similarity Problem: What if u1 &amp; u2 only have 1 film in
+common? Solution: Only compare two users with more than 3 movies in common.
+If less than 3, similarity is 0.</p>
           
           
 
           
           <div class="method-source-code" id="similarity-source">
-            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 78</span>
+            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 82</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">similarity</span>(<span class="ruby-identifier">user1</span>, <span class="ruby-identifier">user2</span>)
-  <span class="ruby-comment"># user_hah: key: movie_ID. value: rating</span>
   <span class="ruby-identifier">user1_hsh</span> = <span class="ruby-constant">Hash</span>.<span class="ruby-identifier">new</span>
   <span class="ruby-identifier">user2_hsh</span> = <span class="ruby-constant">Hash</span>.<span class="ruby-identifier">new</span>
 
@@ -600,17 +601,17 @@ similarity is 0.</p>
 
         <div class="method-description">
           
-          <p>Filter users 98% or more similar to u Lower the shreshould, longer it takes
-to calculate.</p>
+          <p>Filter users 98% or more similar to u and return them in an array Lower the
+shreshould, longer it takes to calculate.</p>
           
           
 
           
           <div class="method-source-code" id="top_sim_user-source">
-            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 134</span>
+            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 136</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">top_sim_user</span>(<span class="ruby-identifier">u</span>)
         <span class="ruby-identifier">sim_users</span> = []
-        <span class="ruby-identifier">sim_hash_descend</span> = <span class="ruby-identifier">most_similar</span>(<span class="ruby-identifier">u</span>, <span class="ruby-string">&quot;no&quot;</span>)
+        <span class="ruby-identifier">sim_hash_descend</span> = <span class="ruby-identifier">most_similar</span>(<span class="ruby-identifier">u</span>)
         <span class="ruby-identifier">sim_hash_descend</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">k</span>, <span class="ruby-identifier">v</span><span class="ruby-operator">|</span>
                 <span class="ruby-keyword">if</span> <span class="ruby-identifier">v</span>.<span class="ruby-identifier">to_f</span> <span class="ruby-operator">&gt;</span> <span class="ruby-value">98</span>
                         <span class="ruby-identifier">sim_users</span>.<span class="ruby-identifier">push</span>(<span class="ruby-identifier">k</span>)
@@ -649,7 +650,7 @@ to calculate.</p>
 
           
           <div class="method-source-code" id="viewers-source">
-            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 175</span>
+            <pre><span class="ruby-comment"># File movie_data_P2_reborn.rb, line 177</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">viewers</span>(<span class="ruby-identifier">m</span>)
         <span class="ruby-keyword">return</span> <span class="ruby-ivar">@base_mu_hsh</span>[<span class="ruby-identifier">m</span>].<span class="ruby-identifier">keys</span>
 <span class="ruby-keyword">end</span></pre>

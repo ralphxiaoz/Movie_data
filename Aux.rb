@@ -1,7 +1,11 @@
 require "csv"
 module Aux
 	
-	def Aux.load_file(file_path, relation, rows = nil)
+	# load the file, format depending on relation
+	# um(user-movie) relation: load the file into um_hsh -- {user => {movie => [rating, time]}} 
+	# mu(movie-user) relation: load the file into mu_hsh -- {movie => {user => [rating, time]}} 
+	# is there any better way to generate such a hash?
+ 	def Aux.load_file(file_path, relation, rows = nil)
 		um_hsh = {}
 		mu_hsh = {}
 		count = 0
@@ -31,6 +35,7 @@ module Aux
 		end
 	end
 
+	# return the mean of an array
 	def Aux.array_mean(arr)
 		return (arr.inject{ |sum, el| sum + el }.to_f / arr.size).round(2)
 	end
